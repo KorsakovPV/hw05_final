@@ -11,7 +11,9 @@ class TestProfile(TestCase):
         self.client = Client()
 
     def test_profile_new_user(self):
-        self.assertEqual(self.client.post('/skywocker3/').status_code, 404)
+        url_profile = reverse('profile',
+                              kwargs={'username': 'skywocker3'})
+        self.assertEqual(self.client.post(url_profile).status_code, 404)
         self.client.post(reverse('signup'),
                          {'first_name': 'Luke',
                           'last_name': 'Skywocker',
@@ -33,6 +35,7 @@ class TestNewPost(TestCase):
         self.client.force_login(self.user)
         self.client.post(reverse('new_post'),
                          {'text': 'test_new_post_authorized'}, follow=True)
+        self.assertEqual(Post.objects.all().count(), 1)
         last_post = Post.objects.last()
         self.assertEqual(last_post.text, 'test_new_post_authorized')
 
@@ -230,10 +233,26 @@ class TestFollow(TestCase):
         response_profile = self.client.get(url_profile)
         self.assertContains(response_profile, 'Подписаться')
 
+    def test_double_follow(self):
+        url_profile_follow = reverse('profile_follow',
+                                     kwargs={'username': self.user2.username})
+        self.client.post(url_profile_follow, follow=True)
+        self.assertEqual(Follow.objects.all().count(), 1)
+        self.client.post(url_profile_follow, follow=True)
+        self.assertEqual(Follow.objects.all().count(), 1)
+
+    def test_self_follow(self):
+        url_profile_follow = reverse('profile_follow',
+                                     kwargs={'username': self.user1.username})
+        self.assertEqual(Follow.objects.all().count(), 0)
+        self.client.post(url_profile_follow, follow=True)
+        self.assertEqual(Follow.objects.all().count(), 0)
+        print(10)
+
     def test_unfollow(self):
         Follow.objects.create(user_id=self.user1.id, author_id=self.user2.id)
         url_profile = reverse('profile',
-                              kwargs={'username': self.user2.username})
+                              kwargs={'username': self.user1.username})
         response_profile = self.client.get(url_profile)
         self.assertContains(response_profile, 'Отписаться')
 

@@ -38,31 +38,29 @@ def new_post(request):
 
 
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    post_list = user.author_posts.order_by('-pub_date')
-    follow = User.objects.filter(id__in=(user.following.all().values('user')))
-    if request.user in User.objects.filter(
-            id__in=(user.following.all().values('user'))):
-        following = True
+    author = get_object_or_404(User, username=username)
+    post_list = author.author_posts.order_by('-pub_date')
+    if request.user.is_anonymous:
+        is_follow = False
     else:
-        following = False
-
+        is_follow = Follow.objects.filter(author=author,
+                                          user=request.user).exists()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(request, 'profile.html',
-                  {'author': user,
+                  {'author': author,
                    'page': page,
                    'paginator': paginator,
-                   'following': following,
-                   'follow': follow
+                   'is_follow': is_follow,
                    })
 
 
 def post_view(request, username, post_id):
     author = get_object_or_404(User, username=username)
     post = get_object_or_404(author.author_posts, id=post_id)
-    post_comments = Comment.objects.filter(post_id=post_id)
+    post_comments = post.post_comment.all()
+    #post_comments = Comment.objects.filter(post_id=post_id)
     paginator = Paginator(post_comments, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -104,7 +102,7 @@ def server_error(request):
 def add_comment(request, username, post_id):
     author = get_object_or_404(User, username=username)
     post = get_object_or_404(author.author_posts, id=post_id)
-    post_comments = Comment.objects.filter(post_id=post_id)
+    post_comments = post.post_comment.all()
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -138,10 +136,11 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    follow = Follow.objects.filter(user_id=request.user.id,
-                                   author_id=author.id).exists()
-    if request.user != author and follow is False:
-        Follow.objects.create(user_id=request.user.id, author_id=author.id)
+    #follow = Follow.objects.filter(user_id=request.user.id,
+    #                               author_id=author.id).exists()
+    if request.user != author:
+#    Follow.objects.create(user_id=request.user.id, author_id=author.id)
+        Follow.objects.get_or_create(user_id=request.user.id, author_id=author.id)
     return redirect('profile', username=username)
 
 

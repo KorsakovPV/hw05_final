@@ -24,7 +24,7 @@
 {% endif %}
 
 <!-- Комментарии -->
-{% for item in page %}
+{% for comment in page %}
 <div class="card mb-3 mt-1 shadow-sm">
     <div class="card-body">
         <div class="media mb-4">
@@ -35,7 +35,7 @@
                     </a>
                 </h5>
                 <p class="card-text">
-                    {{ item.text }}
+                    {{ item.text|linebreaksbr }}
                 </p>
             </div>
         </div>

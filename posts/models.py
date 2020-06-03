@@ -36,21 +36,16 @@ class Post(models.Model):
 class Comment(models.Model):
     post = models.ForeignKey(Post,
                              on_delete=models.CASCADE,
-                             blank=False,
                              verbose_name='Пост',
                              related_name='post_comment')
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
-                               blank=False,
-                               null=True,
                                verbose_name='Автор',
                                related_name='author_comment')
     text = models.TextField(blank=False,
-                            null=False,
                             verbose_name='Текст коментария')
     created = models.DateTimeField(auto_now_add=True,
-                                   editable=False,
-                                   blank=False)
+                                   editable=False)
 
 
 class Follow(models.Model):
