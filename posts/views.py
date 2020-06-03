@@ -3,11 +3,11 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from posts.forms import CommentForm, PostForm
-from posts.models import Comment, Follow, Group, Post, User
+from posts.models import Follow, Group, Post, User
 
 
 def index(request):
-    post_list = Post.objects.order_by('-pub_date').all()
+    post_list = Post.objects.all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -17,7 +17,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.group_posts.order_by('-pub_date')
+    posts = group.group_posts.all()
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -39,7 +39,7 @@ def new_post(request):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    post_list = author.author_posts.order_by('-pub_date')
+    post_list = author.author_posts.all()
     if request.user.is_anonymous:
         is_follow = False
     else:
@@ -60,14 +60,10 @@ def post_view(request, username, post_id):
     author = get_object_or_404(User, username=username)
     post = get_object_or_404(author.author_posts, id=post_id)
     post_comments = post.post_comment.all()
-    #post_comments = Comment.objects.filter(post_id=post_id)
-    paginator = Paginator(post_comments, 10)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
     form = CommentForm()
     return render(request, 'post.html',
-                  {'author': author, 'post': post, 'page': page,
-                   'paginator': paginator, 'form': form,
+                  {'author': author, 'post': post,
+                   'form': form,
                    'post_comments': post_comments})
 
 
@@ -102,7 +98,6 @@ def server_error(request):
 def add_comment(request, username, post_id):
     author = get_object_or_404(User, username=username)
     post = get_object_or_404(author.author_posts, id=post_id)
-    post_comments = post.post_comment.all()
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -112,12 +107,8 @@ def add_comment(request, username, post_id):
         return redirect('post_view',
                         username=username,
                         post_id=post_id)
-    paginator = Paginator(post_comments, 10)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
     return render(request, 'comments.html',
-                  {'form': form, 'post': post, 'page': page,
-                   'paginator': paginator})
+                  {'form': form, 'post': post})
 
 
 @login_required
@@ -136,11 +127,9 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    #follow = Follow.objects.filter(user_id=request.user.id,
-    #                               author_id=author.id).exists()
     if request.user != author:
-#    Follow.objects.create(user_id=request.user.id, author_id=author.id)
-        Follow.objects.get_or_create(user_id=request.user.id, author_id=author.id)
+        Follow.objects.get_or_create(user_id=request.user.id,
+                                     author_id=author.id)
     return redirect('profile', username=username)
 
 

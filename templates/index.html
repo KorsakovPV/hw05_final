@@ -7,7 +7,7 @@
 {% block content %}
 
 {% cache 20 index_page %}
-
+{% endcache %}
 <div class="container">
     {% include "menu.html" with index=True %}
     <h1> Последние обновления на сайте</h1>
@@ -20,7 +20,7 @@
 {% include "paginator.html" with items=page paginator=paginator %}
 {% endif %}
 
-{% endcache %}
+
 
 {% endblock %}
 

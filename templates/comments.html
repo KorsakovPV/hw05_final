@@ -1,10 +1,5 @@
 <!-- Форма добавления комментария -->
-{% extends "base.html" %}
-{% block title %}Последние обновления на сайте{% endblock %}
 {% load user_filters %}
-{% load thumbnail %}
-{% block content %}
-
 
 {% if user.is_authenticated %}
 <div class="card my-4">
@@ -24,18 +19,18 @@
 {% endif %}
 
 <!-- Комментарии -->
-{% for comment in page %}
+{% for comment in post.post_comment.all %}
 <div class="card mb-3 mt-1 shadow-sm">
     <div class="card-body">
         <div class="media mb-4">
             <div class="media-body">
                 <h5 class="mt-0">
-                    <a href="{% url 'profile' username=item.author.username %}" name="comment_{{ item.id }}">
-                        {{ item.author.username }}
+                    <a href="{% url 'profile' username=comment.author.username %}" name="comment_{{ comment.id }}">
+                        {{ comment.author.username }}
                     </a>
                 </h5>
                 <p class="card-text">
-                    {{ item.text|linebreaksbr }}
+                    {{ comment.text|linebreaksbr }}
                 </p>
             </div>
         </div>
@@ -43,8 +38,3 @@
 </div>
 {% endfor %}
 
-{% if page.has_other_pages %}
-{% include "paginator.html" with items=page paginator=paginator%}
-{% endif %}
-
-{% endblock %}

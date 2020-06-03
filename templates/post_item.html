@@ -25,9 +25,7 @@
         <!-- Отображение ссылки на комментарии -->
         <div class="d-flex justify-content-between align-items-center">
             <div class="btn-group ">
-                <a class="btn btn-sm text-muted" href="{% url 'post_view' username=post.author.username post_id=post.id %}" role="button">Просмотр
-                    поста</a>
-                <a class="btn btn-sm text-muted" href="{% url 'add_comment' username=post.author.username post_id=post.id %}" role="button">
+                <a class="btn btn-sm text-muted" href="{% url 'post_view' username=post.author.username post_id=post.id %}" role="button">
                     {% if post.post_comment.count %}
                     {{ post.post_comment.count }} комментариев
                     {% else%}

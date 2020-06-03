@@ -32,30 +32,10 @@
             </div>
         </div>
         <div class="col-md-9">
-            {% include "post_item.html" with post=post %} Просмотр одного поста
-            <!-- Комментарии -->
-            {% for item in page %}
-            <div class="card mb-3 mt-1 shadow-sm">
-                <div class="card-body">
-                    <div class="media mb-4">
-                        <div class="media-body">
-                            <h5 class="mt-0">
-                                <a href="{% url 'profile' username=item.author.username %}" name="comment_{{ item.id }}">
-                                    {{ item.author.username }}
-                                </a>
-                            </h5>
-                            <p class="card-text">
-                                {{ item.text|linebreaksbr }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+            {% include "post_item.html" with post=post %}
 
-            {% if page.has_other_pages %}
-            {% include "paginator.html" with items=page paginator=paginator%}
-            {% endif %}
+            <!-- Комментарии -->
+            {% include "comments.html" with user=user form=form post=post %}
 
         </div>
     </div>

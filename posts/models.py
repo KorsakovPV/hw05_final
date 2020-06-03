@@ -29,6 +29,9 @@ class Post(models.Model):
                               related_name='group_posts')
     image = models.ImageField(upload_to='posts/', blank=True, null=True)
 
+    class Meta:
+        ordering = ['-pub_date']
+
     def __str__(self):
         return self.text
 
@@ -46,6 +49,9 @@ class Comment(models.Model):
                             verbose_name='Текст коментария')
     created = models.DateTimeField(auto_now_add=True,
                                    editable=False)
+
+    class Meta:
+        ordering = ['-created']
 
 
 class Follow(models.Model):

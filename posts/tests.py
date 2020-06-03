@@ -21,7 +21,7 @@ class TestProfile(TestCase):
                           'email': 'l.skywocker@dethstar.com',
                           'password1': 'isjediskywockerisjedi',
                           'password2': 'isjediskywockerisjedi'}, follow=True)
-        self.assertEqual(self.client.post('/skywocker3/').status_code, 200)
+        self.assertEqual(self.client.post(url_profile).status_code, 200)
 
 
 class TestNewPost(TestCase):
@@ -44,7 +44,8 @@ class TestNewPost(TestCase):
     def test_new_post_not_authorized_user(self):
         response = self.client.get(reverse('new_post'))
         self.assertURLEqual(response.url,
-                            '{}?next=/new/'.format(reverse('login')),
+                            '{}?next={}'.format(reverse('login'),
+                                                reverse('new_post')),
                             msg_prefix='Неавторизованный посетитель не может '
                                        'опубликовать пост (его редиректит на '
                                        'страницу входа')
@@ -119,7 +120,7 @@ class TestPostImages(TestCase):
         self.group = Group.objects.create(title='harvester',
                                           description='harvester',
                                           slug='harvester')
-        self.path_img = '/home/pavel/Dev/hw04_tests/media/posts/Korra.jpg'
+        self.path_img = '/home/pavel/Dev/hw05_final/media/posts/Korra.jpg'
         with open(self.path_img, 'rb') as img:
             test_post = Post.objects.create(text='TEST_POST_1',
                                             author=self.user,
@@ -159,7 +160,7 @@ class TestPostImages(TestCase):
         self.assertContains(response, '<img')
 
     def test_load_images(self):
-        self.path_img = '/home/pavel/Dev/hw04_tests/media/posts/picture.txt'
+        self.path_img = '/home/pavel/Dev/hw05_final/media/posts/picture.txt'
         with open(self.path_img, 'rb') as img:
             test_post = Post.objects.create(text='TEST_POST_1',
                                             author=self.user, group=self.group)
@@ -171,10 +172,9 @@ class TestPostImages(TestCase):
                                              'text': 'post with mmmmyy image',
                                              'image': img,
                                              'group': self.group.id})
-        last_post = Post.objects.last()
         url_post_view = reverse('post_view',
-                                kwargs={'username': last_post.author,
-                                        'post_id': last_post.id})
+                                kwargs={'username': test_post.author,
+                                        'post_id': test_post.id})
         response = self.client.get(url_post_view)
         self.assertNotContains(response, '<img')
 
@@ -236,24 +236,24 @@ class TestFollow(TestCase):
     def test_double_follow(self):
         url_profile_follow = reverse('profile_follow',
                                      kwargs={'username': self.user2.username})
-        self.client.post(url_profile_follow, follow=True)
+        self.client.get(url_profile_follow, follow=True)
         self.assertEqual(Follow.objects.all().count(), 1)
-        self.client.post(url_profile_follow, follow=True)
+        self.client.get(url_profile_follow, follow=True)
         self.assertEqual(Follow.objects.all().count(), 1)
 
     def test_self_follow(self):
         url_profile_follow = reverse('profile_follow',
                                      kwargs={'username': self.user1.username})
         self.assertEqual(Follow.objects.all().count(), 0)
-        self.client.post(url_profile_follow, follow=True)
+        self.client.get(url_profile_follow, follow=True)
         self.assertEqual(Follow.objects.all().count(), 0)
-        print(10)
 
     def test_unfollow(self):
         Follow.objects.create(user_id=self.user1.id, author_id=self.user2.id)
+        self.assertEqual(Follow.objects.all().count(), 1)
         url_profile = reverse('profile',
-                              kwargs={'username': self.user1.username})
-        response_profile = self.client.get(url_profile)
+                              kwargs={'username': self.user2.username})
+        response_profile = self.client.get(url_profile, follow=True)
         self.assertContains(response_profile, 'Отписаться')
 
     def test_follow_index(self):
