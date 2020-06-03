@@ -6,7 +6,7 @@
 
 {% block content %}
 
-{% cache 20 index_page %}
+{% cache 20 index_page page.number %}
 
 <div class="container">
     {% include "menu.html" with index=True %}

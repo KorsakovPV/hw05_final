@@ -2,8 +2,12 @@ import time
 
 from django.test import Client, TestCase
 from django.urls import reverse
-
+from django.test import override_settings
 from posts.models import Follow, Group, Post, User
+
+DUMMY_CACHE = {
+    'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}
+}
 
 
 class TestProfile(TestCase):
@@ -51,6 +55,7 @@ class TestNewPost(TestCase):
                                        'страницу входа')
         self.assertEqual(Post.objects.all().count(), 0)
 
+    @override_settings(CACHES=DUMMY_CACHE)
     def test_new_post_view(self):
         self.client.force_login(self.user)
         self.post = Post.objects.create(text='TEST_POST_1', author=self.user)
@@ -148,6 +153,7 @@ class TestPostImages(TestCase):
         response = self.client.get(url_profile)
         self.assertContains(response, '<img')
 
+    @override_settings(CACHES=DUMMY_CACHE)
     def test_index_images(self):
         url_index = reverse('index')
         response = self.client.get(url_index)
