@@ -1,8 +1,8 @@
 import time
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from django.test import override_settings
+
 from posts.models import Follow, Group, Post, User
 
 DUMMY_CACHE = {
