@@ -14,4 +14,4 @@
 5. Выполните миграции.
 - ``python manage.py migrate``
 6. Запустите локальный сервер.
-- ``python3 manage.py runserver``
+- ``python manage.py runserver``
