@@ -15,10 +15,12 @@ __pycache__/
 *.sublime-project
 *.sublime-workspace
 
-
+static/
 posts/static/
 media/
 sent_emails/
 .vscode/
 
 db.sqlite3
+/dump.sql
+/dump.json
