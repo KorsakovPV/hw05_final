@@ -29,9 +29,9 @@ jobs:
       run: |
         pytest
 
-#    - name: Run unittest
-#      run: |
-#        python manage.py test
+    - name: Run unittest
+      run: |
+        python manage.py test
 
     - name: Run flake8
       run: |

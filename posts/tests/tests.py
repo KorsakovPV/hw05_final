@@ -1,9 +1,11 @@
+"""Тесты view функций приложения posts."""
 import time
 
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from posts.models import Follow, Group, Post, User
+from yatube.settings import BASE_DIR
 
 DUMMY_CACHE = {
     'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}
@@ -11,10 +13,20 @@ DUMMY_CACHE = {
 
 
 class TestProfile(TestCase):
+    """Класс для тестирования страницы профиля."""
+
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
 
     def test_profile_new_user(self):
+        """
+        Тест страницы профиля.
+
+        Для существующего пользователя ответ 200.
+        Для не существующего пользователя ответ 404.
+
+        """
         url_profile = reverse('profile',
                               kwargs={'username': 'skywocker3'})
         self.assertEqual(self.client.post(url_profile).status_code, 404)
@@ -29,13 +41,23 @@ class TestProfile(TestCase):
 
 
 class TestNewPost(TestCase):
+    """Класс для тестирования страницы нового поста."""
+
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
         self.user = User.objects.create_user(username='skywocker3',
                                              email='l.skywocker@dethstar.com',
                                              password='skywockerisjedi')
 
     def test_new_post_authorized_user(self):
+        """
+        Тест страницы нового поста для авторизированного пользователя.
+
+        Создается пост, проверяется что он появился в базе, проверяется текст
+        на странице верный.
+
+        """
         self.client.force_login(self.user)
         self.client.post(reverse('new_post'),
                          {'text': 'test_new_post_authorized'}, follow=True)
@@ -46,6 +68,12 @@ class TestNewPost(TestCase):
         self.assertEqual(last_post.author, self.user)
 
     def test_new_post_not_authorized_user(self):
+        """
+        Тест страницы нового поста для не авторизированного пользователя.
+
+        Создается пост, проверяется что он не появился в базе.
+
+        """
         response = self.client.get(reverse('new_post'))
         self.assertURLEqual(response.url,
                             '{}?next={}'.format(reverse('login'),
@@ -57,6 +85,14 @@ class TestNewPost(TestCase):
 
     @override_settings(CACHES=DUMMY_CACHE)
     def test_new_post_view(self):
+        """
+        Тест страницы просмотра поста для авторизированного пользователя.
+
+        Создается пост, проверяется что он есть на странице поста, на профиле
+        пользователя и на главной странице.
+        Так как главная страница кеширована применяется декоратор.
+
+        """
         self.client.force_login(self.user)
         self.post = Post.objects.create(text='TEST_POST_1', author=self.user)
         url_post_view = reverse('post_view',
@@ -74,7 +110,10 @@ class TestNewPost(TestCase):
 
 
 class TestPostEdit(TestCase):
+    """Класс для проверки редактирования поста."""
+
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
         self.user = User.objects.create_user(username='skywocker3',
                                              email='l.skywocker@dethstar.com',
@@ -83,6 +122,14 @@ class TestPostEdit(TestCase):
         self.post = Post.objects.create(text='TEST_POST_1', author=self.user)
 
     def test_edit_post_authorized(self):
+        """
+        Тест страницы редактирования поста для авторизированного пользователя.
+
+        Создается пост, проверяется что он есть на странице поста, на профиле
+        пользователя и на главной странице.
+        Так как главная страница кеширована применяется декоратор.
+
+        """
         url_post_edit = reverse('post_edit',
                                 kwargs={'username': self.user.username,
                                         'post_id': self.post.id})
@@ -104,28 +151,47 @@ class TestPostEdit(TestCase):
 
 
 class TestPostErrors(TestCase):
+    """Класс проверки вывода ошибок."""
+
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
 
     def test_page_not_found(self):
+        """
+        Тест 404.
+
+        Делается запрос на заведомо не существующий пост и профиль. Проверяется
+        что код ошибки 404. Проверяется что применен верный шаблон.
+
+        """
         url_post_view = reverse('post_view', kwargs={'username': 'pavel',
                                                      'post_id': 2})
         response = self.client.get(url_post_view)
         self.assertTemplateUsed(response, 'misc/404.html')
         self.assertEqual(response.status_code, 404)
 
+        url_post_view = reverse('profile', kwargs={'username': 'pavel',})
+        response = self.client.get(url_post_view)
+        self.assertTemplateUsed(response, 'misc/404.html')
+        self.assertEqual(response.status_code, 404)
+
 
 class TestPostImages(TestCase):
+    """Класс тестирования изображений."""
+
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
         self.user = User.objects.create_user(username='skywocker3',
                                              email='l.skywocker@dethstar.com',
                                              password='skywockerisjedi')
         self.client.force_login(self.user)
+        print(BASE_DIR)
         self.group = Group.objects.create(title='harvester',
                                           description='harvester',
                                           slug='harvester')
-        self.path_img = '/home/pavel/Dev/hw05_final/media/posts/Korra.jpg'
+        self.path_img = f'{BASE_DIR}/posts/tests/test_media/Korra.jpg'
         with open(self.path_img, 'rb') as img:
             test_post = Post.objects.create(text='TEST_POST_1',
                                             author=self.user,
@@ -166,7 +232,7 @@ class TestPostImages(TestCase):
         self.assertContains(response, '<img')
 
     def test_load_images(self):
-        self.path_img = '/home/pavel/Dev/hw05_final/media/posts/picture.txt'
+        self.path_img = f'{BASE_DIR}/posts/tests/test_media/picture.txt'
         with open(self.path_img, 'rb') as img:
             test_post = Post.objects.create(text='TEST_POST_1',
                                             author=self.user, group=self.group)
@@ -187,6 +253,7 @@ class TestPostImages(TestCase):
 
 class TestCache(TestCase):
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
         self.user = User.objects.create_user(username='skywocker3',
                                              email='l.skywocker@dethstar.com',
@@ -223,6 +290,7 @@ class TestCache(TestCase):
 
 class TestFollow(TestCase):
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
         self.user1 = User.objects.create_user(username='skywocker1',
                                               email='l.skywocker@dethstar.com',
@@ -275,6 +343,7 @@ class TestFollow(TestCase):
 
 class TestComment(TestCase):
     def setUp(self):
+        """Подготовка тестового окружения."""
         self.client = Client()
         self.user1 = User.objects.create_user(username='skywocker1',
                                               email='l.skywocker@dethstar.com',
