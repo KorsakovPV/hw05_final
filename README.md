@@ -1,4 +1,4 @@
-![hw05_final](https://github.com/KorsakovPV/hw05_final/workflows/test/badge.svg)(https://github.com/KorsakovPV/hw05_final/actions)
+[![hw05_final](https://github.com/KorsakovPV/hw05_final/workflows/test/badge.svg)](https://github.com/KorsakovPV/hw05_final/actions)
 
 # hw05_final
 
