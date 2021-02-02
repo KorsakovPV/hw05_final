@@ -171,7 +171,7 @@ class TestPostErrors(TestCase):
         self.assertTemplateUsed(response, 'misc/404.html')
         self.assertEqual(response.status_code, 404)
 
-        url_post_view = reverse('profile', kwargs={'username': 'pavel',})
+        url_post_view = reverse('profile', kwargs={'username': 'pavel'})
         response = self.client.get(url_post_view)
         self.assertTemplateUsed(response, 'misc/404.html')
         self.assertEqual(response.status_code, 404)
@@ -187,7 +187,6 @@ class TestPostImages(TestCase):
                                              email='l.skywocker@dethstar.com',
                                              password='skywockerisjedi')
         self.client.force_login(self.user)
-        print(BASE_DIR)
         self.group = Group.objects.create(title='harvester',
                                           description='harvester',
                                           slug='harvester')
@@ -206,6 +205,7 @@ class TestPostImages(TestCase):
                                              'group': self.group.id})
 
     def test_post_view_images(self):
+        """Проверяет наличие кактинки на странице поста."""
         last_post = Post.objects.last()
         url_post_view = reverse('post_view',
                                 kwargs={'username': last_post.author,
@@ -214,6 +214,7 @@ class TestPostImages(TestCase):
         self.assertContains(response, '<img')
 
     def test_profile_images(self):
+        """Проверяет наличие кактинки на странице профиля."""
         last_post = Post.objects.last()
         url_profile = reverse('profile', kwargs={'username': last_post.author})
         response = self.client.get(url_profile)
@@ -221,17 +222,20 @@ class TestPostImages(TestCase):
 
     @override_settings(CACHES=DUMMY_CACHE)
     def test_index_images(self):
+        """Проверяет наличие кактинки на главной странице."""
         url_index = reverse('index')
         response = self.client.get(url_index)
         self.assertContains(response, '<img')
 
     def test_group_view_images(self):
+        """Проверяет наличие кактинки на странице группы."""
         url_group_view = reverse('group_view',
                                  kwargs={'slug': self.group.slug})
         response = self.client.get(url_group_view)
         self.assertContains(response, '<img')
 
     def test_load_images(self):
+        """Проверяет не валидная картинка не грузится."""
         self.path_img = f'{BASE_DIR}/posts/tests/test_media/picture.txt'
         with open(self.path_img, 'rb') as img:
             test_post = Post.objects.create(text='TEST_POST_1',
@@ -252,6 +256,8 @@ class TestPostImages(TestCase):
 
 
 class TestCache(TestCase):
+    """Класс для проверки кеширования."""
+
     def setUp(self):
         """Подготовка тестового окружения."""
         self.client = Client()
@@ -262,6 +268,15 @@ class TestCache(TestCase):
         self.post = Post.objects.create(text='TEST_POST_1', author=self.user)
 
     def test_index_cache(self):
+        """
+        Тест кеширования.
+
+        Проверяется, что на странице есть пост 1 и нет поста 2.
+        Редактируем пост.
+        Проверяем вывод главной страницы. Там не отредактированный пост.
+        Ждем больше чем в кеше указано времени
+
+        """
         url_index = reverse('index')
         response_url_index = self.client.get(url_index)
         self.assertNotContains(response_url_index, 'TEST_POST_2')
@@ -289,6 +304,8 @@ class TestCache(TestCase):
 
 
 class TestFollow(TestCase):
+    """Класс тестирования подписок."""
+
     def setUp(self):
         """Подготовка тестового окружения."""
         self.client = Client()
@@ -302,12 +319,25 @@ class TestFollow(TestCase):
         self.post = Post.objects.create(text='TEST_POST_1', author=self.user2)
 
     def test_follow(self):
+        """
+        Тест подписки.
+
+        Проверяется, что на странице профиля есть кнопка подписаться.
+
+        """
         url_profile = reverse('profile',
                               kwargs={'username': self.user2.username})
         response_profile = self.client.get(url_profile)
         self.assertContains(response_profile, 'Подписаться')
 
     def test_double_follow(self):
+        """
+        Тест подписки и повторной подписки.
+
+        Проверяется, что после подписки в базе появится запись, а повторная
+        подписка не изменит состояние базы.
+
+        """
         url_profile_follow = reverse('profile_follow',
                                      kwargs={'username': self.user2.username})
         self.client.get(url_profile_follow, follow=True)
@@ -316,6 +346,13 @@ class TestFollow(TestCase):
         self.assertEqual(Follow.objects.all().count(), 1)
 
     def test_self_follow(self):
+        """
+        Тест подписки на самого себя.
+
+        Проверяется, что подписка на самого себя не изменит состояние базы.
+        Подписка не удастся.
+
+        """
         url_profile_follow = reverse('profile_follow',
                                      kwargs={'username': self.user1.username})
         self.assertEqual(Follow.objects.all().count(), 0)
@@ -323,6 +360,13 @@ class TestFollow(TestCase):
         self.assertEqual(Follow.objects.all().count(), 0)
 
     def test_unfollow(self):
+        """
+        Тест отписки.
+
+        Проверяется, что на странице профиля у подписанного пользователя есть
+        кнопка отписаться.
+
+        """
         Follow.objects.create(user_id=self.user1.id, author_id=self.user2.id)
         self.assertEqual(Follow.objects.all().count(), 1)
         url_profile = reverse('profile',
@@ -331,6 +375,13 @@ class TestFollow(TestCase):
         self.assertContains(response_profile, 'Отписаться')
 
     def test_follow_index(self):
+        """
+        Тест страницы подписанных пользователей.
+
+        Проверяется, что подписка на самого себя не изменит состояние базы.
+        Подписка не удастся.
+
+        """
         url_follow_index = reverse('follow_index')
         response_profile = self.client.get(url_follow_index)
         self.assertNotContains(response_profile, 'TEST_POST_1')
@@ -342,6 +393,8 @@ class TestFollow(TestCase):
 
 
 class TestComment(TestCase):
+    """Класс тестирования комментариев."""
+
     def setUp(self):
         """Подготовка тестового окружения."""
         self.client = Client()
@@ -354,6 +407,13 @@ class TestComment(TestCase):
         self.post = Post.objects.create(text='TEST_POST_1', author=self.user1)
 
     def test_comment_not_authorized_user(self):
+        """
+        Тест комментариев для не ваторезированного пользователя.
+
+        Проверяется, не авторизированный пользователь не может оставлять
+        комментарии. Перенаправляется на страницу регистрации.
+
+        """
         url_comment = reverse('add_comment',
                               kwargs={'username': self.post.author.username,
                                       'post_id': self.post.id})
@@ -364,6 +424,12 @@ class TestComment(TestCase):
                              fetch_redirect_response=True)
 
     def test_comment_authorized_user(self):
+        """
+        Тест комментариев для ваторезированного пользователя.
+
+        Проверяется, авторизированный пользователь может оставлять комментарии.
+
+        """
         self.client.force_login(self.user1)
         url_comment = reverse('add_comment',
                               kwargs={'username': self.post.author.username,
