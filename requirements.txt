@@ -1,5 +1,6 @@
 astroid==2.3.3
 attrs==19.3.0
+autopep8==1.5.2
 Django==2.2.9
 django-debug-toolbar==2.2
 entrypoints==0.3
@@ -15,12 +16,14 @@ Pillow==8.1.0
 pluggy==0.13.1
 py==1.10.0
 pycodestyle==2.5.0
+pydocstyle==5.1.1
 pyflakes==2.1.1
 pyparsing==2.4.7
 pytest==6.2.2
 pytest-django==4.1.0
 pytz==2019.3
 six==1.14.0
+snowballstemmer==2.1.0
 sorl-thumbnail==12.7.0
 sqlparse==0.3.1
 toml==0.10.2
