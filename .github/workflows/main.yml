@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build_and_test:
 
     runs-on: ubuntu-latest
     strategy:
@@ -29,9 +29,9 @@ jobs:
       run: |
         pytest
 
-    - name: Run unittest
-      run: |
-        python manage.py test
+#    - name: Run unittest
+#      run: |
+#        python manage.py test
 
     - name: Run flake8
       run: |
