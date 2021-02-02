@@ -1,4 +1,4 @@
-![foodgram-project](https://github.com/KorsakovPV/hw05_final/workflows/test/badge.svg)
+![hw05_final](https://github.com/KorsakovPV/hw05_final/workflows/test/badge.svg)(https://github.com/KorsakovPV/hw05_final/actions)
 
 # hw05_final
 
@@ -17,3 +17,5 @@
 - ``python manage.py migrate``
 6. Запустите локальный сервер.
 - ``python manage.py runserver``
+
+При работе над проектом использован стек технологий: **[Django](https://www.djangoproject.com/)**, **[Python](https://www.python.org/)**, **[GitHub](https://github.com)**, TDD, код написан в IDE PyCharm, OS Linux Mint
